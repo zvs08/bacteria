@@ -1,0 +1,7 @@
+train_val_split: 0.2
+img_width: 800
+img_height: 800
+batch_size: 4
+scale: 4
+learning_rate: 0.001
+dropout: 0.2

@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     sc = cfg.scale
     ex = 1
-    chkp_path = "../chekpoints"
+    chkp_path = os.path.join(str(Path(os.path.dirname(os.path.abspath(__file__))).parent), "chekpoints")
     if not os.path.exists(chkp_path):
         os.mkdir(chkp_path)
         os.mkdir(os.path.join(chkp_path, "resnet"))
@@ -61,7 +61,8 @@ if __name__ == '__main__':
             ex = 0
             model = resnet152_model(cfg.img_height, cfg.img_width, sc=sc, num_classes=num_classes)
             model.summary()
-            checkpoint = SaveModelCheckpoint('resnet' + str(sc) + '.h5', monitor='val_loss', verbose=1,
+            chkp_path = os.path.join(chkp_path, "resnet", 'resnet' + str(sc) + '.h5')
+            checkpoint = SaveModelCheckpoint(chkp_path, monitor='val_loss', verbose=1,
                                              save_best_only=True, mode='min', prev_best=None)
     if (net == 'eff'):
         if not os.path.exists(os.path.join(chkp_path, "efficientnet", 'efficientnetb1-baseline.h5')):
@@ -73,10 +74,10 @@ if __name__ == '__main__':
             x = layers.GlobalAveragePooling2D()(x)
             x = layers.Dropout(0.5)(x)
             outputs = layers.Dense(num_classes, activation='softmax')(x)
-
+            chkp_path = os.path.join(chkp_path, "efficientnet", 'efficientnetb1-baseline.h5')
             ## Compile and run
             model = models.Model(inputs, outputs)
-            checkpoint = SaveModelCheckpoint('efficientnetb1-baseline.h5', monitor='val_loss', verbose=1,
+            checkpoint = SaveModelCheckpoint(chkp_path, monitor='val_loss', verbose=1,
                                              save_best_only=True, mode='min', prev_best=None)
             model.summary()
     if (ex == 0):

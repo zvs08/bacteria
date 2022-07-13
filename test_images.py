@@ -1,22 +1,20 @@
 import argparse
 
 import tensorflow as tf
+import yaml
 
 print(tf.__version__)
 from tensorflow.keras import layers
 from tensorflow.keras import models
 import tensorflow_addons as tfa
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import statistics
 import os
-import json
 import numpy as np
 import pandas as pd
-# import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 import cv2
 import shutil
-from sklearn.model_selection import train_test_split
+from easydict import EasyDict as edict
 from bac_resnet import resnet152_model, SaveModelCheckpoint
 from custom_layers.scale_layer import Scale
 
@@ -25,15 +23,18 @@ if __name__ == '__main__':
     parser.add_argument('net_type', type=str, default=None, help='res or eff')
     parser.add_argument('data_path', type=str, default=None, help='Path to the dataset')
     args = parser.parse_args()
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")) as f:
+        cfg = edict(yaml.safe_load(f))
     batch_size = 1
     net = args.net_type
     test_dir = args.data_path
-    sc = 4
+    sc = cfg.scale
     im_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.3)
     if (net == 'res'):
-        model = load_model('resnet' + str(sc) + '.h5', custom_objects={'Scale': Scale})
+        model = load_model(os.path.join("checkpoints", "resnet", 'resnet' + str(sc) + '.h5'),
+                           custom_objects={'Scale': Scale})
     else:
-        model = load_model('efficientnetb1-baseline.h5')
+        model = load_model(os.path.join("checkpoints", "efficientnet", 'efficientnetb1-baseline.h5'))
         model.trainable = False
 
     for subdir, dirs, files in os.walk(test_dir):

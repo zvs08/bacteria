@@ -50,23 +50,30 @@ if __name__ == '__main__':
     print(num_classes)
 
     sc = cfg.scale
-    ex = 1
-    chkp_path = os.path.join(str(Path(os.path.dirname(os.path.abspath(__file__))).parent), "chekpoints")
+    chkp_path = os.path.join(str(Path(os.path.dirname(os.path.abspath(__file__))).parent), "checkpoints")
     if not os.path.exists(chkp_path):
         os.mkdir(chkp_path)
         os.mkdir(os.path.join(chkp_path, "resnet"))
         os.mkdir(os.path.join(chkp_path, "efficientnet"))
     if (net == 'res'):
-        if not os.path.exists(os.path.join(chkp_path, "resnet", 'resnet' + str(sc) + '.h5')):
-            ex = 0
+        chkp_path = os.path.join(chkp_path, "resnet", 'resnet' + str(sc) + '.h5')
+        if not os.path.exists(chkp_path):
+            if os.path.exists(os.path.join(os.path.split(chkp_path)[0], "loss.txt")):
+                os.remove(os.path.join(os.path.split(chkp_path)[0], "loss.txt"))
             model = resnet152_model(cfg.img_height, cfg.img_width, sc=sc, num_classes=num_classes)
             model.summary()
-            chkp_path = os.path.join(chkp_path, "resnet", 'resnet' + str(sc) + '.h5')
-            checkpoint = SaveModelCheckpoint(chkp_path, monitor='val_loss', verbose=1,
-                                             save_best_only=True, mode='min', prev_best=None)
+            l = None
+
+        else:
+            model = load_model(chkp_path, custom_objects={'Scale': Scale})
+            l = open(os.path.join(os.path.split(chkp_path)[0], "loss.txt")).readlines()
+            l = float(l[len(l) - 1].split('\t')[1])
+            print("prev_loss = {}".format(l))
     if (net == 'eff'):
-        if not os.path.exists(os.path.join(chkp_path, "efficientnet", 'efficientnetb1-baseline.h5')):
-            ex = 0
+        chkp_path = os.path.join(chkp_path, "efficientnet", 'efficientnetb1-baseline.h5')
+        if not os.path.exists(chkp_path):
+            if os.path.exists(os.path.join(os.path.split(chkp_path)[0], "loss.txt")):
+                os.remove(os.path.join(os.path.split(chkp_path)[0], "loss.txt"))
             base_model = tf.keras.applications.EfficientNetB1(include_top=False, weights='imagenet')
             base_model.trainable = True
             inputs = layers.Input((cfg.img_height, cfg.img_width, 3))
@@ -74,28 +81,34 @@ if __name__ == '__main__':
             x = layers.GlobalAveragePooling2D()(x)
             x = layers.Dropout(0.5)(x)
             outputs = layers.Dense(num_classes, activation='softmax')(x)
-            chkp_path = os.path.join(chkp_path, "efficientnet", 'efficientnetb1-baseline.h5')
             ## Compile and run
             model = models.Model(inputs, outputs)
-            checkpoint = SaveModelCheckpoint(chkp_path, monitor='val_loss', verbose=1,
-                                             save_best_only=True, mode='min', prev_best=None)
             model.summary()
-    if (ex == 0):
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-        model.compile(optimizer,
-                      loss='categorical_crossentropy',  # tfa.losses.SigmoidFocalCrossEntropy(),
-                      metrics=['accuracy'])
-        earlystopper = tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss', patience=3, verbose=0, mode='min',
-            restore_best_weights=True
-        )
+            l = None
+        else:
+            model = load_model(chkp_path)
+            l = open(os.path.join(os.path.split(chkp_path)[0], "loss.txt")).readlines()
+            l = float(l[len(l) - 1].split('\t')[1])
+            print("prev_loss = {}".format(l))
 
-        callbacks_list = [checkpoint]
-        # Train
-        model.fit(train_generator,
-                  epochs=8,
-                  validation_data=validation_generator,
-                  callbacks=[callbacks_list])
-        # earlystopper])
+    checkpoint = SaveModelCheckpoint(chkp_path, monitor='val_loss', verbose=1,
+                                             save_best_only=True, mode='min', prev_best=l)
 
-        # model.save('efficientnetb1-baseline.h5')
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(optimizer,
+                  loss='categorical_crossentropy',  # tfa.losses.SigmoidFocalCrossEntropy(),
+                  metrics=['accuracy'])
+    earlystopper = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss', patience=3, verbose=0, mode='min',
+        restore_best_weights=True
+    )
+
+    callbacks_list = [checkpoint]
+    # Train
+    model.fit(train_generator,
+              epochs=cfg.epoch,
+              validation_data=validation_generator,
+              callbacks=[callbacks_list])
+    # earlystopper])
+
+    # model.save('efficientnetb1-baseline.h5')

@@ -83,6 +83,12 @@ class SaveModelCheckpoint(Callback):
                                   % (epoch + 1, self.monitor, self.best,
                                      current, filepath))
                         self.best = current
+                        f = open(os.path.join(os.path.split(filepath)[0], "loss.txt"), "a")
+                        f.write(str(epoch + 1))
+                        f.write('\t')
+                        f.write(str(self.best))
+                        f.write('\n')
+                        f.close()
                         if self.save_weights_only:
                             self.model.save_weights(filepath, overwrite=True)
                         else:
@@ -100,7 +106,6 @@ class SaveModelCheckpoint(Callback):
                     self.model.save(filepath, overwrite=True)
                     
 sys.setrecursionlimit(3000)
-file_dir = "GRAM200/"
 def identity_block(input_tensor, kernel_size, filters, stage, block):
     '''The identity_block is the block that has no conv layer at shortcut
     # Arguments

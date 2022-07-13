@@ -31,12 +31,13 @@ if __name__ == '__main__':
     batch_size = 1
     net = args.net_type
     file_dir = args.data_path
-    sc = 4
+    sc = cfg.scale
     im_gen = ImageDataGenerator(rescale=1. / 255, validation_split=0.3)
     if (net == 'res'):
-        model = load_model('resnet' + str(sc) + '.h5', custom_objects={'Scale': Scale})
+        model = load_model(os.path.join("checkpoints", "resnet", 'resnet' + str(sc) + '.h5'),
+                           custom_objects={'Scale': Scale})
     else:
-        model = load_model('efficientnetb1-baseline.h5')
+        model = load_model(os.path.join("checkpoints", "efficientnet", 'efficientnetb1-baseline.h5'))
         model.trainable = False
     # model.summary()
 

@@ -5,9 +5,31 @@ The first one, ResNet, was modified via scaling coefficient, corresponding to th
 ## Dataset
 For the data were selected the images from Medical Microscopy field, Gram Stain bacteria populations. 3 different types of such bacteria were chosen: Negative Bacilli, Cocci Chains and Cocci Clumps. Each image contains multiple bacteria cells, but all of them belong to one of the types above.
 
-*NEGATIVE BACILLI*![nb](images/NB_22.jpg)
+*NEGATIVE BACILLI*
 
-*COCCI CHAINS*![cch](images/CCH_1.jpg)
+![nb](images/NB_22.jpg)
 
-*COCCI CLUMPS*![ccl](images/CCL_1.jpg)
+*COCCI CHAINS*
 
+![cch](images/CCH_1.jpg)
+
+*COCCI CLUMPS*
+
+![ccl](images/CCL_1.jpg)
+
+The structure of the dataset has the following format
+   ```
+   ${dataset name}
+      -- COCCI CHAINS
+          |-- 1.jpg
+          |-- 2.jpg
+          ...
+      -- COCI CLUMPS
+          |-- 1.jpg
+          |-- 2.jpg
+          ...
+      -- NEGATIVE BACILLI
+          |-- 1.jpg
+          |-- 2.jpg
+          ...
+   ```

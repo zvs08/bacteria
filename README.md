@@ -5,31 +5,22 @@ The first one, ResNet, was modified via scaling coefficient, corresponding to th
 ## Dataset
 For the data were selected the images from Medical Microscopy field, Gram Stain bacteria populations. 3 different types of such bacteria were chosen: Negative Bacilli, Cocci Chains and Cocci Clumps. Each image contains multiple bacteria cells, but all of them belong to one of the types above.
 
-*NEGATIVE BACILLI*
+*NEGATIVE BACILLI*![nb](images/NB_22.jpg)
 
-![nb](images/NB_22.jpg)
+*COCCI CHAINS*![cch](images/CCH_1.jpg)
 
-*COCCI CHAINS*
+*COCCI CLUMPS*![ccl](images/CCL_1.jpg)
 
-![cch](images/CCH_1.jpg)
+## Training
 
-*COCCI CLUMPS*
+Training script requires 2 arguments: 
 
-![ccl](images/CCL_1.jpg)
+1) net type which is either "res" or "eff"
+2) path to the dataset, where the subsets "train" and "test" were already created.
 
-The structure of the dataset has the following format
-   ```
-   ${dataset name}
-      -- COCCI CHAINS
-          |-- 1.jpg
-          |-- 2.jpg
-          ...
-      -- COCI CLUMPS
-          |-- 1.jpg
-          |-- 2.jpg
-          ...
-      -- NEGATIVE BACILLI
-          |-- 1.jpg
-          |-- 2.jpg
-          ...
-   ```
+For example, if you want to train ResNet and your dataset called "data", which located at the same level as this project, then the command
+would be:
+python train/train.py res ../data
+
+## Evaluation
+Note that the network was trained on sub-images of the original ones by splitting with 2 x 2 grid.
